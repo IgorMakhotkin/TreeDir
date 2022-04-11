@@ -1,0 +1,14 @@
+C:\TreeDir\TreeDir\TreeDir\bin\Debug\net6.0\TreeDir.exe
+C:\TreeDir\TreeDir\TreeDir\bin\Debug\net6.0\TreeDir.deps.json
+C:\TreeDir\TreeDir\TreeDir\bin\Debug\net6.0\TreeDir.runtimeconfig.json
+C:\TreeDir\TreeDir\TreeDir\bin\Debug\net6.0\TreeDir.dll
+C:\TreeDir\TreeDir\TreeDir\bin\Debug\net6.0\ref\TreeDir.dll
+C:\TreeDir\TreeDir\TreeDir\bin\Debug\net6.0\TreeDir.pdb
+C:\TreeDir\TreeDir\TreeDir\obj\Debug\net6.0\TreeDir.GeneratedMSBuildEditorConfig.editorconfig
+C:\TreeDir\TreeDir\TreeDir\obj\Debug\net6.0\TreeDir.AssemblyInfoInputs.cache
+C:\TreeDir\TreeDir\TreeDir\obj\Debug\net6.0\TreeDir.AssemblyInfo.cs
+C:\TreeDir\TreeDir\TreeDir\obj\Debug\net6.0\TreeDir.csproj.CoreCompileInputs.cache
+C:\TreeDir\TreeDir\TreeDir\obj\Debug\net6.0\TreeDir.dll
+C:\TreeDir\TreeDir\TreeDir\obj\Debug\net6.0\ref\TreeDir.dll
+C:\TreeDir\TreeDir\TreeDir\obj\Debug\net6.0\TreeDir.pdb
+C:\TreeDir\TreeDir\TreeDir\obj\Debug\net6.0\TreeDir.genruntimeconfig.cache
