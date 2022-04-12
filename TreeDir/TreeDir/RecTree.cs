@@ -14,11 +14,19 @@ namespace TreeDir
         }
 
         public string StartDir { get; set; }
-        public void Print(string startDir)
+        public bool PrintInFile { get; set; } = true;
+        public bool ReturnHumanRead { get; set; } = false;
+        public void Print()
         {
-            SearchTree(new DirectoryInfo(startDir));
-           
+            WriteColored(StartDir, DirColor);
+            WriteLine();
+            PrintTree(StartDir);
         }
+        public Action<string> Write { get; set; } = Console.Write;
+        public Action<ConsoleColor> SetColor { get; set; } = color => Console.ForegroundColor = color;
+        public ConsoleColor DefaultColor { get; set; } = Console.ForegroundColor;
+        public ConsoleColor DirColor { get; set; } = ConsoleColor.Blue;
+        public ConsoleColor FileColor { get; set; } = Console.ForegroundColor;
 
         // Конвертирование байтов
         public static string byteconverter(long bytes, string suffix, bool useSuffix = false, int digits = 0)
@@ -30,12 +38,9 @@ namespace TreeDir
             }
             catch (Exception ex) { return ex.Message; }
         }
-
         // формирования размеров файлов в человекочитаемой форме
-        public static string ReturnSize(long size)
+        public static string ReturnSizeHM(long size)
         {
-            
-
             if (size < 1000) // размеры до 1Кб указывать в байтах
                 return byteconverter(size, "B", true, 0);
             else if (size < 1000000) //размеры до 1Мб в килобайтах с 2 знаками после запятой
@@ -46,47 +51,114 @@ namespace TreeDir
                 return byteconverter(size, "GB", true, 2);
             else
                 return size.ToString();
-
-
         }
-        private void SearchTree (DirectoryInfo root)
+        public string ReturnSizeByte(long size)
         {
-
-            FileInfo[] files = null;
-            DirectoryInfo[] subDirs = null;
-          
-
-            
-            // Получаем все файлы в текущем каталоге
-            try
+            return byteconverter(size, "B", true, 0);
+        }
+        public string ReturnSize(long Length)
+        {
+            if (ReturnHumanRead)
             {
-                files = root.GetFiles("*.*");
+                return ReturnSizeHM(Length);
             }
-            catch (UnauthorizedAccessException e)
+            else
+                return ReturnSizeByte(Length);
+        }
+        private void WriteLine(string text = "")
+        {
+            Write(text + Environment.NewLine);
+        }
+        private void WriteColored(string text, ConsoleColor color, string size)
+        {
+            SetColor(color);
+            Write(text);
+            SetColor(DefaultColor);
+            Write("(" + size + ")");
+        }
+        private void WriteColored(string text, ConsoleColor color)
+        {
+            SetColor(color);
+            Write(text);
+            SetColor(DefaultColor);
+        }
+        private ConsoleColor GetColor(FileSystemInfo fsItem)
+        {
+            if (fsItem.IsDirectory())
             {
-                Console.WriteLine(e.Message);
+                return DirColor;
             }
-            catch (DirectoryNotFoundException e)
+            return FileColor;
+        }
+        private void WriteName(FileSystemInfo fsItem, string size)
+        {
+            WriteColored(fsItem.Name, GetColor(fsItem), size);
+        }
+        private void WriteName(FileSystemInfo fsItem)
+        {
+            WriteColored(fsItem.Name, GetColor(fsItem));
+        }
+        private void PrintTree(string startDir, string prefix = "")
+        {
+            var di = new DirectoryInfo(startDir);
+            var fsItems = di.GetFileSystemInfos()
+                .Where(f => !f.Name.StartsWith("."))
+                .OrderBy(f => f.Name)
+                .ToList();
+            // Проходим список
+            foreach (var fsItem in fsItems.Take(fsItems.Count - 1))
             {
-                Console.WriteLine(e.Message);
+                Write(prefix + "├── ");
+                // если не является директорией
+                if (!fsItem.IsDirectory())
+                {
+                    // получаем информацию о нужном нам файле
+                    FileInfo[] files = null;
+                    files = di.GetFiles(fsItem.Name);
+                    foreach (FileInfo file in files)
+                    {
+                        //Печатаем имя файла и его размер
+                        WriteName(fsItem, ReturnSize(file.Length));
+                        WriteLine();
+                    }
+                }
+                //Если является директорией 
+                if (fsItem.IsDirectory())
+                {
+                    //Печатаем имя папки
+                    WriteName(fsItem);
+                    WriteLine();
+                    //Рекурсивно вызываем функцию передавая имя текущей папки
+                    PrintTree(fsItem.FullName, prefix + "│   ");
+                }
             }
-
-            if(files != null)
+            // для последнего элемента в списке
+            var lastFsItem = fsItems.LastOrDefault();
+            if (lastFsItem != null)
             {
+                Write(prefix + "└── ");
+                FileInfo[] files = null;
+                files = di.GetFiles(lastFsItem.Name);
                 foreach (FileInfo file in files)
                 {
-                    Console.WriteLine("├── {0} ({1})", file.Name, ReturnSize(file.Length));
+                    WriteName(lastFsItem, ReturnSize(file.Length));
+                    WriteLine();
                 }
-                //получаем все подкаталоги
-                subDirs = root.GetDirectories();
-                //проходим по каждому подкаталогу
-                foreach (DirectoryInfo dirInfo in subDirs)
+                if (lastFsItem.IsDirectory())
                 {
-                    Console.WriteLine("└──{0} ({1})", dirInfo.Name);
-                    //РЕКУРСИЯ
-                    SearchTree(dirInfo);
+                    WriteName(lastFsItem);
+                    WriteLine();
+                    PrintTree(lastFsItem.FullName, prefix + "    ");
                 }
             }
         }
     }
+    public static class FileSystemInfoExtensions
+    {
+        public static bool IsDirectory(this FileSystemInfo fsItem)
+        {
+            return (fsItem.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
+        }
+    }
 }
+
