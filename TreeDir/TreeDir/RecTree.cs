@@ -8,9 +8,10 @@ namespace TreeDir
 {
     public class RecTree
     {
-        public RecTree(string startDir)
+        public RecTree(string startDir,string output)
         {
             StartDir = startDir;
+            Output = output;
             
         }
         DateTime date = DateTime.Now;
@@ -30,7 +31,7 @@ namespace TreeDir
         {
             if(PrintInFile)
             {
-                Output = defaultOutputName();
+                Output += defaultOutputName();
                 printDirInFile(Output, StartDir);
             }
             else

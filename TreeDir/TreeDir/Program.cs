@@ -34,7 +34,7 @@ namespace TreeDir
                 {
                     output = args[i + 1];
                     i++;
-                    if (output == " ")
+                    if (String.IsNullOrEmpty(output))
                     {
                         output = ".";
                     }
@@ -43,10 +43,6 @@ namespace TreeDir
                 {
                     startDir = args[i + 1];
                     i++;
-                    if (startDir == " ")
-                    {
-                        startDir = ".";
-                    }
                 }
                 else
                 {
@@ -60,12 +56,13 @@ namespace TreeDir
                 startDir = ".";
             }
 
-            new RecTree(startDir)
+            new RecTree(startDir,output)
             {
                 PrintInFile = printInFile,
                 ReturnHumanRead = returnHumanRead
 
             }.Print();
+            Console.WriteLine(output);
         }
     }
 }
