@@ -13,15 +13,24 @@ namespace TreeDir
             StartDir = startDir;
             
         }
-
+        DateTime date = DateTime.Now;
+        
         public string StartDir { get; set; }
-        public string Output = "C:\\Output.txt";
+        public string Output = null;
+
         public bool PrintInFile { get; set; } = false;
         public bool ReturnHumanRead { get; set; } = false;
+        public string defaultOutputName()
+        {
+            DateTime date = DateTime.Now;
+            string name = "sizes-" + date.Year + "-" + date.Month + "-" + date.Day + ".txt";
+            return name;
+        }
         public void Print()
         {
             if(PrintInFile)
             {
+                Output = defaultOutputName();
                 printDirInFile(Output, StartDir);
             }
             else
@@ -141,101 +150,109 @@ namespace TreeDir
         }
         private void PrintTree(string startDir, string prefix = "")
         {
-            var di = new DirectoryInfo(startDir);
-            var fsItems = di.GetFileSystemInfos()
-                .Where(f => !f.Name.StartsWith("."))
-                .OrderBy(f => f.Name)
-                .ToList();
-            // Проходим список
-            foreach (var fsItem in fsItems.Take(fsItems.Count - 1))
+            try
             {
-                if(PrintInFile)
+                var di = new DirectoryInfo(startDir);
+                var fsItems = di.GetFileSystemInfos()
+                    .Where(f => !f.Name.StartsWith("."))
+                    .OrderBy(f => f.Name)
+                    .ToList();
+
+                // Проходим список
+                foreach (var fsItem in fsItems.Take(fsItems.Count - 1))
                 {
-                    printInFile(Output, prefix + "├── ");
-                }
-                else
-                Write(prefix + "├── ");
-                
-                // если не является директорией
-                if (!fsItem.IsDirectory())
-                {
-                    // получаем информацию о нужном нам файле
-                    FileInfo[] files = null;
-                    files = di.GetFiles(fsItem.Name);
-                    foreach (FileInfo file in files)
+                    if (PrintInFile)
                     {
-                        //Печатаем имя файла и его размер
-                        if(PrintInFile)
+                        printInFile(Output, prefix + "├── ");
+                    }
+                    else
+                        Write(prefix + "├── ");
+
+                    // если не является директорией
+                    if (!fsItem.IsDirectory())
+                    {
+                        // получаем информацию о нужном нам файле
+                        FileInfo[] files = null;
+                        files = di.GetFiles(fsItem.Name);
+                        foreach (FileInfo file in files)
                         {
-                            printInFile(Output, fsItem,file);
+                            //Печатаем имя файла и его размер
+                            if (PrintInFile)
+                            {
+                                printInFile(Output, fsItem, file);
+                                printInFile(Output);
+                            }
+                            else
+                            {
+                                WriteName(fsItem, ReturnSize(file.Length));
+                                WriteLine();
+                            }
+                        }
+                    }
+                    //Если является директорией 
+                    if (fsItem.IsDirectory())
+                    {
+                        //Печатаем имя папки
+                        if (PrintInFile)
+                        {
+                            printInFile(Output, fsItem);
                             printInFile(Output);
                         }
                         else
                         {
-                            WriteName(fsItem, ReturnSize(file.Length));
+                            WriteName(fsItem);
+                            WriteLine();
+                        }
+                        //Рекурсивно вызываем функцию передавая имя текущей папки
+                        PrintTree(fsItem.FullName, prefix + "│   ");
+                    }
+                }
+                // для последнего элемента в списке
+                var lastFsItem = fsItems.LastOrDefault();
+                if (lastFsItem != null)
+                {
+                    if (PrintInFile)
+                    {
+                        printInFile(Output, prefix + "└── ");
+                    }
+                    else
+                    {
+                        Write(prefix + "└── ");
+                    }
+                    FileInfo[] files = null;
+                    files = di.GetFiles(lastFsItem.Name);
+                    foreach (FileInfo file in files)
+                    {
+                        if (PrintInFile)
+                        {
+                            printInFile(Output, lastFsItem, file);
+                            printInFile(Output);
+                        }
+                        else
+                        {
+                            WriteName(lastFsItem, ReturnSize(file.Length));
                             WriteLine();
                         }
                     }
-                }
-                //Если является директорией 
-                if (fsItem.IsDirectory())
-                {
-                    //Печатаем имя папки
-                    if(PrintInFile)
+                    if (lastFsItem.IsDirectory())
                     {
-                        printInFile(Output, fsItem);
-                        printInFile(Output);
+                        if (PrintInFile)
+                        {
+                            printInFile(Output, lastFsItem);
+                            printInFile(Output);
+                        }
+                        else
+                        {
+                            WriteName(lastFsItem);
+                            WriteLine();
+                        }
+                        PrintTree(lastFsItem.FullName, prefix + "    ");
                     }
-                    else
-                    {
-                        WriteName(fsItem);
-                        WriteLine();
-                    }
-                    //Рекурсивно вызываем функцию передавая имя текущей папки
-                    PrintTree(fsItem.FullName, prefix + "│   ");
                 }
             }
-            // для последнего элемента в списке
-            var lastFsItem = fsItems.LastOrDefault();
-            if (lastFsItem != null)
+            catch (Exception ex)
             {
-                if(PrintInFile)
-                {
-                    printInFile(Output, prefix + "└── ");
-                }
-                else
-                {
-                    Write(prefix + "└── ");
-                }
-                FileInfo[] files = null;
-                files = di.GetFiles(lastFsItem.Name);
-                foreach (FileInfo file in files)
-                {
-                    if(PrintInFile)
-                    {
-                        printInFile(Output, lastFsItem, file);
-                        printInFile(Output);
-                    }
-                    else
-                    {
-                        WriteName(lastFsItem, ReturnSize(file.Length));
-                        WriteLine();
-                    }
-                }
-                if (lastFsItem.IsDirectory())
-                {
-                    if(PrintInFile)
-                    {
-                        printInFile(Output, lastFsItem);
-                        printInFile(Output);
-                    }
-                    else
-                    {
-                        WriteName(lastFsItem);
-                        WriteLine();
-                    }
-                    PrintTree(lastFsItem.FullName, prefix + "    ");
-                }
+                Console.WriteLine(ex.Message);
             }
         }
     }
