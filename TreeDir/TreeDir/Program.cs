@@ -62,7 +62,7 @@ namespace TreeDir
                 ReturnHumanRead = returnHumanRead
 
             }.Print();
-            Console.WriteLine(output);
+            
         }
     }
 }
